@@ -27,10 +27,10 @@ const reducer = (state, {type,payload}) =>
       if (payload.digit === "." && state.current_operand.includes(".")) {return state}
       return {...state, current_operand: `${state.current_operand || ""}${payload.digit}`}
     case ACTIONS.CHOOSE_OPERATION : return state
-    case ACTIONS.CLEAR : return state
     case ACTIONS.DELETE_DIGIT : return state
     case ACTIONS.EVALUATE : return state
-    case ACTIONS.CLEAR: return {}
+    case ACTIONS.CLEAR: 
+      return {}
     default: return state
   }
 }
@@ -49,10 +49,10 @@ function App() {
       {current_operand}
       </div>
     </div>
-    <button className="span-two" onClick={() => dispatch({type: ACTIONS.CLEAR})}>
+      <button className="span-two" onClick={() => dispatch({type: ACTIONS.CLEAR})}>
         {/* classname is "span-two" because this will span two columns */}
          AC 
-         </button>
+      </button>
       <button> DEL </button>
       <button> ÷ </button>
       <DigitButton digit="1" dispatch={dispatch}/>
