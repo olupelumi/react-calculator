@@ -12,6 +12,7 @@ export const ACTIONS = {
   CLEAR: 'clear',
   DELETE_DIGIT: "delete-digit", 
   EVALUATE: 'evaluate',
+  CLEAR: 'clear',
 }
 
 const reducer = (state, {type,payload}) =>
@@ -19,17 +20,23 @@ const reducer = (state, {type,payload}) =>
   // The second argument here is an action. One that is made up of a type and a payload
   // action = {type, payload}
   switch(type) {
-    case ACTIONS.INSERT_DIGIT: return {...state, current_operand: `${state.current_operand || ""}${payload.digit}`}
+    case ACTIONS.INSERT_DIGIT: 
+      // If we have a leading 0, we don't need to add more 0s.
+      if (payload.digit === "0" && state.current_operand === "0") {return state}
+      // We can't have more than one decimal
+      if (payload.digit === "." && state.current_operand.includes(".")) {return state}
+      return {...state, current_operand: `${state.current_operand || ""}${payload.digit}`}
     case ACTIONS.CHOOSE_OPERATION : return state
     case ACTIONS.CLEAR : return state
     case ACTIONS.DELETE_DIGIT : return state
     case ACTIONS.EVALUATE : return state
+    case ACTIONS.CLEAR: return {}
     default: return state
   }
 }
 
 function App() {
-  const [{current_operand, previous_operand, operation}, dispatch] = useReducer(reducer, {current_operand: "", previous_operand: ""})
+  const [{current_operand, previous_operand, operation}, dispatch] = useReducer(reducer, {current_operand: "", previous_operand: "", operation:""})
   return (
    <div className="calculator-grid">
     <div className="output">
@@ -42,7 +49,7 @@ function App() {
       {current_operand}
       </div>
     </div>
-    <button className="span-two">
+    <button className="span-two" onClick={() => dispatch({type: ACTIONS.CLEAR})}>
         {/* classname is "span-two" because this will span two columns */}
          AC 
          </button>
