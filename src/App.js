@@ -3,6 +3,7 @@ import {useReducer} from 'react'
 import DigitButton from './DigitButton';
 
 import './App.css';
+import OperationButton from './OperationButton';
 
 
 
@@ -26,7 +27,37 @@ const reducer = (state, {type,payload}) =>
       // We can't have more than one decimal
       if (payload.digit === "." && state.current_operand.includes(".")) {return state}
       return {...state, current_operand: `${state.current_operand || ""}${payload.digit}`}
-    case ACTIONS.CHOOSE_OPERATION : return state
+    case ACTIONS.CHOOSE_OPERATION :
+      // No current or previous operand to do an operation on
+      if (state.current_operand == null && state.previous_operand == null){ 
+        return state
+      }
+      // There's a current operand but no previous operand so we want to move the current operand to previous operand
+      if (state.current_operand != null && state.previous_operand == null) {
+        return {
+          ...state, 
+          operation: payload.operation,
+          previous_operand: state.current_operand,
+          current_operand: null,
+        }
+      }
+
+      // There's a previous operand but no current operand so we want to change the operation
+      if (state.previous_operand != null && state.current_operand == null) {
+        return {
+          ...state,
+          operation: payload.operation,
+        }
+
+      }
+
+      // If there is a current operand and a previous operand and an existing operation already, evaluate and add this new operation
+      return {
+        ...state, 
+        previous_operand: evaluate(state), 
+        current_operand: null,
+        operation: payload.operation,
+      }
     case ACTIONS.DELETE_DIGIT : return state
     case ACTIONS.EVALUATE : return state
     case ACTIONS.CLEAR: 
@@ -35,8 +66,34 @@ const reducer = (state, {type,payload}) =>
   }
 }
 
+function evaluate({previous_operand, current_operand, operation}) {
+  const prev = parseFloat(previous_operand)
+  const curr = parseFloat(current_operand)
+  // if (isNaN(prev) || isNaN(curr)) {
+  //   return ""
+  // }
+  let answer = ""
+  // console.log("op", operation)
+  switch (operation) {
+    case "+": // yada
+      answer = prev + curr
+      break
+    case "-": // yada
+      answer = prev - curr
+      break
+
+    case "*": // yada
+      answer = prev * curr
+      break
+
+    case "÷": // yada
+      answer = prev / curr
+      break
+  }
+  return answer.toString()
+}
 function App() {
-  const [{current_operand, previous_operand, operation}, dispatch] = useReducer(reducer, {current_operand: "", previous_operand: "", operation:""})
+  const [{current_operand, previous_operand, operation}, dispatch] = useReducer(reducer, {current_operand: null, previous_operand: null, operation:null})
   return (
    <div className="calculator-grid">
     <div className="output">
@@ -54,19 +111,19 @@ function App() {
          AC 
       </button>
       <button> DEL </button>
-      <button> ÷ </button>
+      <OperationButton operation="÷" dispatch={dispatch}/>
       <DigitButton digit="1" dispatch={dispatch}/>
       <DigitButton digit="2" dispatch={dispatch}/>
       <DigitButton digit="3" dispatch={dispatch}/>
-      <button> * </button>
+      <OperationButton operation="*" dispatch={dispatch}/>
       <DigitButton digit="4" dispatch={dispatch}/>
       <DigitButton digit="5" dispatch={dispatch}/>
       <DigitButton digit="6" dispatch={dispatch}/>
-      <button> + </button>
+      <OperationButton operation="+" dispatch={dispatch}/>
       <DigitButton digit="7" dispatch={dispatch}/>
       <DigitButton digit="8" dispatch={dispatch}/>
       <DigitButton digit="9" dispatch={dispatch}/>
-      <button> - </button>
+      <OperationButton operation="-" dispatch={dispatch}/>
       <DigitButton digit="." dispatch={dispatch}/>
       <DigitButton digit="0" dispatch={dispatch}/>
       <button className="span-two"> = </button>
