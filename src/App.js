@@ -67,7 +67,19 @@ const reducer = (state, {type,payload}) =>
         current_operand: null,
         operation: payload.operation,
       }
-    case ACTIONS.DELETE_DIGIT : return state
+    case ACTIONS.DELETE_DIGIT : 
+      if (state.just_evaluated) {
+        return {
+          ...state, 
+          just_evaluated: false, 
+          current_operand: null,
+        }
+      }
+      if (state.current_operand == null) return state
+      if (state.current_operand.length === 1) {
+        return {...state, current_operand: null}
+      }
+      return {...state, current_operand:state.current_operand.slice(0,-1)}
     case ACTIONS.EVALUATE : 
       // Do we have all the information to evaluate?
       if (state.operation == null  || state.current_operand == null || state.previous_operand == null) {
@@ -89,24 +101,20 @@ const reducer = (state, {type,payload}) =>
 function evaluate({previous_operand, current_operand, operation}) {
   const prev = parseFloat(previous_operand)
   const curr = parseFloat(current_operand)
-  // if (isNaN(prev) || isNaN(curr)) {
-  //   return ""
-  // }
   let answer = ""
-  // console.log("op", operation)
   switch (operation) {
-    case "+": // yada
+    case "+": 
       answer = prev + curr
       break
-    case "-": // yada
+    case "-": 
       answer = prev - curr
       break
 
-    case "*": // yada
+    case "*":
       answer = prev * curr
       break
 
-    case "÷": // yada
+    case "÷":
       answer = prev / curr
       break
   }
@@ -130,7 +138,7 @@ function App() {
         {/* classname is "span-two" because this will span two columns */}
          AC 
       </button>
-      <button> DEL </button>
+      <button onClick={()=> dispatch({type: ACTIONS.DELETE_DIGIT})}> DEL </button>
       <OperationButton operation="÷" dispatch={dispatch}/>
       <DigitButton digit="1" dispatch={dispatch}/>
       <DigitButton digit="2" dispatch={dispatch}/>
