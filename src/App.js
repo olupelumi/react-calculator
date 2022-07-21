@@ -33,6 +33,9 @@ const reducer = (state, {type,payload}) =>
       }
       // If we have a leading 0, we don't need to add more 0s.
       if (payload.digit === "0" && state.current_operand === "0") {return state}
+      if (payload.digit === "." && state.current_operand == null) {
+        return {...state, current_operand: `0${payload.digit}`}
+      }
       // We can't have more than one decimal
       if (payload.digit === "." && state.current_operand.includes(".")) {return state}
       return {...state, current_operand: `${state.current_operand || ""}${payload.digit}`}
