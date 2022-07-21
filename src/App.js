@@ -22,6 +22,15 @@ const reducer = (state, {type,payload}) =>
   // action = {type, payload}
   switch(type) {
     case ACTIONS.INSERT_DIGIT: 
+      // If we just pressed the equal sign to evaluate a previous operand <operation> operand
+      if (state.just_evaluated) {
+        // nullify the current operand
+        return {
+          ...state,
+          current_operand: payload.digit,
+          just_evaluated: false,
+        }
+      }
       // If we have a leading 0, we don't need to add more 0s.
       if (payload.digit === "0" && state.current_operand === "0") {return state}
       // We can't have more than one decimal
@@ -59,7 +68,18 @@ const reducer = (state, {type,payload}) =>
         operation: payload.operation,
       }
     case ACTIONS.DELETE_DIGIT : return state
-    case ACTIONS.EVALUATE : return state
+    case ACTIONS.EVALUATE : 
+      // Do we have all the information to evaluate?
+      if (state.operation == null  || state.current_operand == null || state.previous_operand == null) {
+        return state
+      }
+      return {
+        ...state,
+        just_evaluated: true, 
+        current_operand: evaluate(state),
+        previous_operand: null,
+        operation: null,
+      }
     case ACTIONS.CLEAR: 
       return {}
     default: return state
@@ -126,7 +146,7 @@ function App() {
       <OperationButton operation="-" dispatch={dispatch}/>
       <DigitButton digit="." dispatch={dispatch}/>
       <DigitButton digit="0" dispatch={dispatch}/>
-      <button className="span-two"> = </button>
+      <button className="span-two" onClick={()=> dispatch({type: ACTIONS.EVALUATE})}> = </button>
    </div>
   );
 }
